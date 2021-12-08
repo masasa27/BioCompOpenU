@@ -3,9 +3,17 @@ from copy import deepcopy
 
 
 class Grid:
-    def __init__(self, size=50) -> None:
+    def __init__(self, size=50, mapping=None) -> None:
         self.size = 50
-        self.grid = [deepcopy([Cell() for _ in range(size)]) for _ in range(size)]
+        if not mapping:
+            self.grid = [deepcopy([Cell() for _ in range(size)]) for _ in range(size)]
+        else:
+            assert len(mapping) == self.size
+            for i in range(size):
+                for j in range(size):
+                    pass
+
+
     
     def compute(self):
         """This function calculates the next generation of the matrix
@@ -33,12 +41,8 @@ a = Grid()
 for i in range(10):
     a.compute()
 a.compute()
-for i in range(50):
-    for j in range(50):
-        pass
 
-k = a.grid[25][25].base_poluation
+k = a.grid[25][25].current_poluation
 print(k)
-
 
 

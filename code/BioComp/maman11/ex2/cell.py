@@ -5,10 +5,11 @@ class Cell:
     def __init__(self, kind='City') -> None:
         # base values
         self.base_temptature = 0
+        self.current_tempature = self.base_temptature
         self.wind = Wind()
         self.height = 0
-        self.base_poluation = 0
-        self.base_precipitation = 0
+        self.current_poluation = 0
+        self.current_precipitation = 0
         self.kind = eval(f"{kind}()")
 
         # for update
@@ -19,23 +20,23 @@ class Cell:
     def compute_cell(self):
         # wind carries data from other cells
         if self.n_counters > 0:
-            self.base_precipitation = self.precipitation / \
+            self.current_precipitation = self.precipitation / \
                 self.n_counters + self.kind.precipitation
-            self.base_poluation = min(self.poluation / self.n_counters + self.kind.poluation, 1)
+            self.current_poluation = min(self.poluation / self.n_counters + self.kind.poluation, 1)
 
         # cell didnt get new infomation,
         else:
-            self.base_precipitation = self.kind.precipitation
+            self.current_precipitation = self.kind.precipitation
             # avoding negative polution
-            self.base_poluation = max(self.kind.poluation, 0)
+            self.current_poluation = max(self.kind.poluation, 0)
 
         # rainning
-        self.base_precipitation = self.base_precipitation if self.base_precipitation < 1 else 0
+        self.current_precipitation = self.current_precipitation if self.current_precipitation < 1 else 0
 
         # changing tempature by polution, changing base tempature by change over time
-        self.tempature = self.base_temptature + \
-            (abs(self.base_temptature) / 10) * \
-            ((self.base_poluation * 10) // 5)
+        self.current_tempature = self.base_temptature + \
+            max((abs(self.base_temptature) / 10) * \
+            ((self.current_poluation * 10) // 5) , 2)
         self.base_temptature += (self.tempature - self.base_temptature) / 10
 
         # resting update parameters
@@ -49,7 +50,7 @@ class Cell:
         self.wind.update_wind()
 
     def update_from_cell(self, other):
-        self._update_cell(other.base_poluation, other.base_precipitation)
+        self._update_cell(other.current_poluation, other.current_precipitation)
 
     def _update_cell(self, pol, pre):
         self.poluation += pol
@@ -58,56 +59,5 @@ class Cell:
 
     def get_next_location(self, i, j, s):
         return self.wind.new_location(i, j, s)
-
-
-class Wind:
-
-    def __init__(self) -> None:
-        self.v = 0
-        self.dir_x = 0
-        self.dir_y = 0
-        self.random_counter = 0
-
-        self.randomize_values()
-
-    def new_location(self, i, j, size):
-        rel = (i + self.dir_x * self.v) % (size - 1), (j + (self.dir_y * self.v)) % (size - 1)
-
-        return rel
-
-    def update_wind(self):
-        if self.random_counter % 4 == 0:
-            self.randomize_values()
-
-        else:
-            self.random_counter += 1
-
-        if self.random_counter == 100:
-            self.random_counter = 0
-    
-    def _update_wind(self, v, d):
-        if d == 'N':
-            self.dir_y = -1
-            self.dir_x = 0
-
-        elif d == 'W':
-            self.dir_x = -1
-            self.dir_y = 0
-
-        elif d == 'E':
-            self.dir_x = 1
-            self.dir_y = 0
-        else:
-            self.dir_x = 0
-            self.dir_y = 1
-
-        self.v = v
-    
-    def randomize_values(self):
-        self._update_wind(random.randint(
-            2, 4), random.choice(['N', 'E', 'W', 'S']))
-
-    def __repr__(self) -> str:
-        return f"Wind({self.v},{self.dir_x}, {self.dir_y})"
 
 
